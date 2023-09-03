@@ -1,26 +1,50 @@
 
 let lines = [];
 
-// todo observe if first line of NiCdLCpp3o2z6nBrayOn text changes / to another song (always same URL)
-let myInterval = setInterval(() => {
-    console.log("inter");
-    if (document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn")[0]) {
-        clearInterval(myInterval)
-        lines = document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn");
-        const linesText = [];
-
-        for (elm of lines) {
-            linesText.push({src:elm.innerText});
-
-            // put the loader in span
-            // if (elm.innerText.length > 3) elm.innerHTML += "<br> ...טוען תרגום <br><br>";
-           
+function waitForElm(selector) {
+    return new Promise(resolve => {
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
         }
-        getFullTrans(linesText); // todo filter if not english, empty, and more
-    }
-}, 30);
 
-const serverUri = ''; // the translation server is private
+        const observer = new MutationObserver(mutations => {
+            if (document.querySelector(selector)) {
+                resolve(document.querySelector(selector));
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+}
+
+waitForElm('.NiCdLCpp3o2z6nBrayOn').then((elm) => {
+    lines = document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn");
+    const linesText = [];
+
+    for (elm of lines) {
+        linesText.push({ src: elm.innerText });
+
+        if (elm.innerText.length > 3) elm.innerHTML +=
+            `<br>
+                 <span class='transLoader'> 
+                    <span class='InnerTransLoader'> 
+                      ...טוען תרגום 
+                    </span>
+                 </span>
+            </br>
+            </br>`;
+
+    }
+    getFullTrans(linesText); // todo filter if not english, empty, and more
+});
+
+// todo observe if first line of NiCdLCpp3o2z6nBrayOn text changes / to another song (always same URL)
+
+const serverUri = ''; // the translation should be private
 
 const getFullTrans = (src, index) => {
     fetch(`${serverUri}/trans/lines`, {
@@ -50,36 +74,12 @@ const getFullTrans = (src, index) => {
 function setLines(transArray) {
     let i = 0;
     for (elm of lines) {
-        if (elm.innerText.length > 3){
-            // todo replace the span instead of whole string
-            // elm.innerText = elm.innerText.replaceAll('טוען תרגום...','')
-            elm.innerHTML += "<br> "+transArray[i]+"<br><br>";
-        } 
+        if (elm.getElementsByClassName("transLoader")[0]) {
+            elm.getElementsByClassName("transLoader")[0].innerHTML = `
+                <span class='InnerTransLoader'> 
+                     ${transArray[i]}
+                <span>`;
+        }
         i++;
     }
 }
-
-// **observer doesnt work at page load**
-
-// const observerOptions = {
-//     childList: true,
-//     attributes: true,
-
-//     // Omit (or set to false) to observe only changes to the parent node
-//     subtree: false
-// }
-
-// function callback() {
-//     if (document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn")[0]) {
-//         const lines = document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn");
-
-//         for(elm of lines){
-//             if(elm.innerText.length > 3)elm.innerHTML += "<br> ...טוען תרגום <br><br>";
-
-//         }
-//         observer.disconnect();
-//     }
-// }
-
-// const observer = new MutationObserver(callback);
-// observer.observe(document.body, observerOptions);

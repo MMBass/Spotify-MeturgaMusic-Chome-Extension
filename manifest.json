@@ -13,7 +13,7 @@
     {
       "js": ["scripts/content.js"],
       "matches": [
-        "https://open.spotify.com/*"
+        "https://open.spotify.com/lyrics"
       ]
     }
   ]

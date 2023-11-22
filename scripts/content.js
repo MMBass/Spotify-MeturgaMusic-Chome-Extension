@@ -22,16 +22,17 @@ function waitForElm(selector) {
     });
 }
 
-waitForElm('.NiCdLCpp3o2z6nBrayOn').then(() => { beforeGetFullTrans() }); // wait for lyrics appears (didn't work without a promise)
+waitForElm('.NiCdLCpp3o2z6nBrayOn').then(() => { beforeGetFullTrans() }); // wait for lyrics to appear (didn't work without a promise)
 
 function beforeGetFullTrans() {
-    lines = document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn");
-    const enNumsCharsRegex = /^[a-zA-Z0-9!@#$%^&*()-_=+[\]{}|;:'",.<>/? ]*$/;
 
-    for (elm of lines) {
-        if (!enNumsCharsRegex.test(elm.textContent)) return;
-    }
-   
+    lines = document.getElementsByClassName("NiCdLCpp3o2z6nBrayOn");
+    // const enNumsCharsRegex = /^[a-zA-Z0-9!@#$%^&*()-_=+[\]{}|;:'",.<>/? ]*$/;
+
+    // for (elm of lines) {
+    //     if (enNumsCharsRegex.test(elm.textContent)) return;
+    // }
+
     const linesText = [];
 
     for (elm of lines) {
@@ -48,10 +49,65 @@ function beforeGetFullTrans() {
             </br>`;
 
     }
-    getFullTrans(linesText); // todo filter if not english, empty, and more
+    loopGoogleApiTrans(linesText);
+    // getFullTrans(linesText); // todo filter if not english, empty, and more
 }
 
-const serverUri = ''; // the translation should be private
+const loopGoogleApiTrans = async (linesText) => {
+    let i = 0;
+    for (elm of lines) {
+        const translatedText = await translateText(linesText[i].src);
+        if (elm.getElementsByClassName("transLoader")[0]) {
+            elm.getElementsByClassName("transLoader")[0].innerHTML = `
+                <span class='InnerTrans' direction=rtl> 
+                     ${translatedText}
+                <span>`;
+        }
+        i++;
+    }
+    StartObserveSongChanges();
+}
+
+const translateText = async (text) => {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${'he'}&dt=t&q=${encodeURIComponent(
+      text
+    )}`;
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+    
+      var translatedTexts = [];
+      if (data && data[0]) {
+        data[0].forEach((element) => {
+          translatedTexts.push(element[0]);
+        });
+        
+        return translatedTexts.join(" ");
+      } else {
+        throw new Error("Translation failed.");
+        return 'Field...'
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+      return 'Error...'
+    }
+  };
+
+const googleTranslateText = async (text) => {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${'he'}&dt=t&q=${encodeURIComponent(text)}`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data[0][0];
+    } catch (error) {
+        console.error('Translation error:', error);
+        return 'Failed...'; // Return original text if translation fails
+    }
+};
+
+const serverUri = 'https://musicline-backend.vercel.app'; // the translation should be private
 
 const getFullTrans = (src, index) => {
     fetch(`${serverUri}/trans/lines`, {
@@ -68,7 +124,7 @@ const getFullTrans = (src, index) => {
     })
         .then(response => response.json())
         .then(data => {
-            if (data?.trans.length) {
+            if (data?.trans?.length) {
                 currFirstLine = lines[0].textContent;
                 setLines(data.trans);
             }
@@ -78,10 +134,8 @@ const getFullTrans = (src, index) => {
             let i = 0;
             for (elm of lines) {
                 if (elm.getElementsByClassName("transLoader")[0]) {
-                    elm.getElementsByClassName("transLoader")[0].innerHTML = `
-                        <span class='InnerTrans'> 
-                    
-                        <span>`;
+                    if (i === 0) { elm.getElementsByClassName("transLoader")[0].innerHTML = `*ארעה שגיאה בתרגום*`; }
+                    elm.getElementsByClassName("transLoader")[0].parentElement.remove();
                 }
                 i++;
             } // empty the loader if error

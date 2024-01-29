@@ -11,10 +11,18 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/content.js"],
+      "js": [
+        "scripts/content.js"
+      ],
       "matches": [
         "https://open.spotify.com/lyrics"
       ]
     }
+  ],
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://musicline-backend.vercel.app/*"
   ]
 }

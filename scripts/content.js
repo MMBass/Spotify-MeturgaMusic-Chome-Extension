@@ -109,7 +109,7 @@ function beforeGetFullTrans() {
     getFullTrans(linesText); // todo filter if not english, empty, and more
 }
 
-const serverUri = 'http://localhost:5000';
+const serverUri = 'https://musicline-backend.vercel.app';
 
 const getFullTrans = (src, index) => {
     fetch(`${serverUri}/trans/lines?key=${localStorage.getItem('MMusicKey')}`, {

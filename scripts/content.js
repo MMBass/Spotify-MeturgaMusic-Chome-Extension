@@ -143,7 +143,7 @@ const getFullTrans = (src, index) => {
             } // empty the loader if error
 
             // Check if response is 403 and change the button back to key input
-            if (response === 403) {
+            if (e.status === 403) {
                 translateBtn.parentNode.replaceChild(apiKeyInput, translateBtn);
                 localStorage.removeItem('MMusicKey');
             };

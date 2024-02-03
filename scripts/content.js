@@ -101,22 +101,23 @@ function beforeGetFullTrans() {
                     <span class='innerTransLoader' direction=rtl> 
                         ...טוען תרגום 
                     </span>
+                    <br>
                 </span>
-                <br>
             `;
     }
 
     getFullTrans(linesText); // todo filter if not english, empty, and more
 }
 
-const serverUri = 'https://musicline-backend.vercel.app';
+const serverUri = 'http://localhost:5000';
 
 const getFullTrans = (src, index) => {
     fetch(`${serverUri}/trans/lines?key=${localStorage.getItem('MMusicKey')}`, {
         method: 'post',
         headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'x-chrome-extension': 'meturgamusic'
         },
         body: JSON.stringify({
             "lines": src,
@@ -133,15 +134,14 @@ const getFullTrans = (src, index) => {
         }
         ).catch((e) => {
             console.log(e);
-            let i = 0;
-            for (elm of lines) {
-                if (elm.getElementsByClassName("transLoader")[0]) {
-                    if (i === 0) { elm.getElementsByClassName("transLoader")[0].innerHTML = `*ארעה שגיאה בתרגום*`; }
-                    elm.getElementsByClassName("transLoader")[0].parentElement.remove();
-                }
-                i++;
-            } // empty the loader if error
 
+            // empty the loaders if error
+            alert('אירעה שגיאה בקבלת התרגום');
+            let loaders = document.querySelectorAll(".transLoader")
+            for (let loader of loaders) {
+                loader.innerHTML = '';
+            }
+     
             // Check if response is 403 and change the button back to key input
             if (e.status === 403) {
                 translateBtn.parentNode.replaceChild(apiKeyInput, translateBtn);
